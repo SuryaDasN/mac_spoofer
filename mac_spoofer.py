@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 import subprocess
-import optparse
+import argparse
 import re
 
 
 def get_argument():
- 	parser = optparse.OptionParser()
-	parser.add_option("-i", "--interface", dest="interface", help="interface to change its MAC address")
-	parser.add_option("-m", "--mac", dest="new_mac", help="New MAC address")
-	(options,arguments) = parser.parse_args()
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", "--interface", dest="interface", help="interface to change its MAC address")
+	parser.add_argument("-m", "--mac", dest="new_mac", help="New MAC address")
+	options = parser.parse_args()
 	if not options.interface:
 		parser.error("[-] Please specify an interface, use --help for more info.")
 	elif not options.new_mac:
