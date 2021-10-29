@@ -3,6 +3,7 @@
 import subprocess
 import argparse
 import re
+import time
 
 
 def get_argument():
@@ -16,9 +17,7 @@ def get_argument():
 		parser.error("[-] Please specify a new MAC address, use --help for more info.")
 	return options
 
-
 def change_mac(interface, new_mac):
-	print("[+] Changing mac address of " + interface + " to " + new_mac)
 	subprocess.call(["ifconfig", interface, "down"])
 	subprocess.call(["ifconfig", interface, "hw", "ether", new_mac])
 	subprocess.call(["ifconfig", interface, "up"])
@@ -33,17 +32,33 @@ def get_current_mac(interface):
 		print("[-] Could not read MAC address.")
 		exit()
 
+
 if __name__ == '__main__':
 
 	options = get_argument()
 
-	current_mac = get_current_mac(options.interface)
-	print("Current MAC = " + str(current_mac))
+	try:
+		original_mac = get_current_mac(options.interface)
+		print(f"[-] Current MAC : {original_mac}")
 
-	change_mac(options.interface, options.new_mac)
+		change_mac(options.interface, options.new_mac)
+		print(f"[+] Changing MAC address of {options.interface} to {options.new_mac}")
+		
+		current_mac = get_current_mac(options.interface)
+		
+		if current_mac == options.new_mac:
+			print(f"[+] MAC address successfully changed to {options.new_mac}")
+			print("[=] Press CRTL + C to revert back.")
+		else:
+			print("[-] MAC address did not get changed ")
 
-	current_mac = get_current_mac(options.interface)
-	if current_mac == options.new_mac:
-		print("[+] MAC address successfully changed to " + options.new_mac)
-	else:
-		print("[-] MAC address did not get changed ")
+		time_elapsed = 0
+		while(True):
+			print(f"\r[+] Time elapsed : {time_elapsed}", end="")
+			time_elapsed += 2
+			time.sleep(2)
+
+	except KeyboardInterrupt:
+		print("\n[-] Detected CRTL + C ")
+		print("[+] Reverting MAC address... Please wait...")
+		change_mac(options.interface, original_mac)
